@@ -3,7 +3,7 @@
 
 ## This project helps researchers and engineers quickly extract, search, and query content from research papers (PDFs). Core flows: upload PDFs, auto-extract text and images, generate chunked embeddings, run semantic search, and produce concise LLM-backed answers with citation snippets.
 
-Tech stack
+## Tech stack
 - Backend: Python 3.12, FastAPI, Uvicorn
 - Frontend: React (v19) + Vite + TypeScript + Tailwind CSS
 - Database: MongoDB (users, sessions, metadata)
@@ -11,7 +11,7 @@ Tech stack
 - ML: LangChain integration
 - Auth: JWT access tokens + HTTP-only refresh cookie
 
-Installation 
+## Installation 
 Place backend environment variables in `backend/.env` and frontend variables in `frontend/.env`.1. Backend (PowerShell):
 ```powershell
 cd backend
