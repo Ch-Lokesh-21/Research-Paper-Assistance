@@ -1,0 +1,123 @@
+import React from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  IconButton,
+  Divider,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import {
+  GitHub as GitHubIcon,
+  LinkedIn as LinkedInIcon,
+  Twitter as TwitterIcon,
+} from '@mui/icons-material';
+
+export const Footer: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const currentYear = new Date().getFullYear();
+
+  const socialLinks = [
+    { icon: <GitHubIcon />, url: '#', label: 'GitHub' },
+    { icon: <LinkedInIcon />, url: '#', label: 'LinkedIn' },
+    { icon: <TwitterIcon />, url: '#', label: 'Twitter' },
+  ];
+
+  return (
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: 'grey.900',
+        color: 'white',
+        py: { xs: 4, sm: 5 },
+        mt: 'auto',
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+          }}
+        >
+          <Typography
+            variant={isMobile ? 'h6' : 'h5'}
+            sx={{
+              fontWeight: 700,
+              mb: 2,
+              background: 'linear-gradient(45deg, #42a5f5 30%, #90caf9 90%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Research Paper Assistant
+          </Typography>
+          
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 3,
+              color: 'grey.400',
+              lineHeight: 1.7,
+              maxWidth: '600px',
+            }}
+          >
+            Empowering researchers worldwide with AI-driven insights and intelligent document
+            analysis. Transform your research workflow today.
+          </Typography>
+
+          <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
+            {socialLinks.map((social, index) => (
+              <IconButton
+                key={index}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+                sx={{
+                  color: 'grey.400',
+                  bgcolor: 'grey.800',
+                  '&:hover': {
+                    color: 'primary.light',
+                    bgcolor: 'grey.700',
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {social.icon}
+              </IconButton>
+            ))}
+          </Box>
+
+          <Divider sx={{ width: '100%', my: 3, bgcolor: 'grey.800' }} />
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: { xs: 1, sm: 2 },
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'grey.500',
+              }}
+            >
+              &copy; {currentYear} Research Paper Assistant. All rights reserved.
+            </Typography>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
+  );
+};
+
+export default Footer;
