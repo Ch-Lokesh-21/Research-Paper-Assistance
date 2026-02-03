@@ -3,13 +3,13 @@ Authentication service for user registration, login, and JWT management.
 """
 
 from datetime import datetime, timezone, timedelta
-from typing import Optional
-
+from fastapi import responses
 import bcrypt
 from jose import JWTError, jwt
 
 from config import settings
 from crud import user_crud
+from crud.refresh_token_revocations import RefreshTokenRevocationCRUD
 from schemas import (
     UserSignupRequest,
     UserLoginRequest,
@@ -241,31 +241,31 @@ class AuthService:
     @classmethod
     async def refresh_access_token(cls, refresh_token: str) -> AuthResponse:
         """
-        Generate new access token from refresh token.
+        Generate new access token and refresh token from existing refresh token.
 
         Args:
             refresh_token: Valid refresh token
 
         Returns:
-            AuthResponse with new access token
+            AuthResponse with new access token and new refresh token
 
         Raises:
             AuthenticationError: If refresh token is invalid
         """
         try:
             payload = cls.decode_token(refresh_token)
-            
-            if payload.type != "refresh":
-                raise AuthenticationError("Invalid token type")
-            
+            if await RefreshTokenRevocationCRUD.is_revoked(refresh_token):
+                raise AuthenticationError("Refresh token has been revoked or already used.")
+            await RefreshTokenRevocationCRUD.revoke(refresh_token, payload.exp)
+
             user = await user_crud.get_by_id(payload.sub)
             if user is None:
                 raise AuthenticationError("User not found")
-
             if not user.is_active:
                 raise AuthenticationError("Account is deactivated")
 
             token, expires_in = cls.create_access_token(str(user.id), user.email)
+            new_refresh_token, refresh_expires_in = cls.create_refresh_token(str(user.id), user.email)
 
             return AuthResponse(
                 success=True,
@@ -275,6 +275,8 @@ class AuthService:
                     token_type="bearer",
                     expires_in=expires_in,
                 ),
+                refresh_token=new_refresh_token,
+                refresh_token_expires_in=refresh_expires_in,
                 user_id=str(user.id),
             )
         except AuthenticationError:

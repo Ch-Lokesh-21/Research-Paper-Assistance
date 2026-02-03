@@ -4,6 +4,7 @@ from .user import UserCRUD, user_crud
 from .session import SessionCRUD, session_crud
 from .session_message import SessionMessageCRUD, session_message_crud
 from .document import DocumentCRUD, document_crud
+from .refresh_token_revocations import RefreshTokenRevocationCRUD
 
 __all__ = [
     "UserCRUD",
@@ -14,4 +15,5 @@ __all__ = [
     "session_message_crud",
     "DocumentCRUD",
     "document_crud",
+    "RefreshTokenRevocationCRUD",
 ]

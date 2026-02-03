@@ -164,6 +164,8 @@ def get_users_collection() -> AsyncIOMotorCollection:
     """Get users collection."""
     return MongoDB.get_collection(settings.mongodb.users_collection)
 
+def get_refresh_token_revocations_collection() -> AsyncIOMotorCollection:
+    return MongoDB.get_collection(settings.mongodb.refresh_token_revocations_collection)
 
 def get_sessions_collection() -> AsyncIOMotorCollection:
     """Get sessions collection."""

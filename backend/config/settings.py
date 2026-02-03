@@ -26,6 +26,8 @@ class MongoDBSettings(BaseSettings):
     )
     # Collection names
     users_collection: str = Field(default="users")
+    refresh_token_revocations_collection: str = Field(
+        default="refresh_token_revocations")
     sessions_collection: str = Field(default="sessions")
     session_messages_collection: str = Field(default="session_messages")
     documents_collection: str = Field(default="documents")

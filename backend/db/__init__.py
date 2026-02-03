@@ -9,6 +9,7 @@ from .mongo import (
     get_documents_collection,
     get_checkpoints_collection,
     get_session_messages_collection,
+    get_refresh_token_revocations_collection,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "get_documents_collection",
     "get_checkpoints_collection",
     "get_session_messages_collection",
+    "get_refresh_token_revocations_collection",
 ]

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status, Response, Cookie, Depends
+from urllib import response
+from fastapi import APIRouter, HTTPException, status, Response, Cookie, Depends, Request
 from typing import Optional, Annotated
 
 from schemas import (
@@ -8,6 +9,8 @@ from schemas import (
     ErrorResponse,
 )
 from services import AuthenticationError, auth_service
+from utils.refresh_token_cookie import set_refresh_token_cookie, delete_refresh_token_cookie
+from crud import RefreshTokenRevocationCRUD
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -33,13 +36,10 @@ async def signup(signup_data: UserSignupRequest, response: Response) -> AuthResp
         auth_response = await auth_service.signup(signup_data)
         
         if auth_response.refresh_token:
-            response.set_cookie(
-                key="refresh_token",
-                value=auth_response.refresh_token,
-                max_age=auth_response.refresh_token_expires_in,
-                httponly=True,
-                secure=False,
-                samesite="lax",
+            set_refresh_token_cookie(
+                response,
+                auth_response.refresh_token,
+                auth_response.refresh_token_expires_in,
             )
         
         return auth_response
@@ -71,13 +71,10 @@ async def login(login_data: UserLoginRequest, response: Response) -> AuthRespons
         auth_response = await auth_service.login(login_data)
         
         if auth_response.refresh_token:
-            response.set_cookie(
-                key="refresh_token",
-                value=auth_response.refresh_token,
-                max_age=auth_response.refresh_token_expires_in,
-                httponly=True,
-                secure=False,
-                samesite="lax",
+            set_refresh_token_cookie(
+                response,
+                auth_response.refresh_token,
+                auth_response.refresh_token_expires_in,
             )
         
         return auth_response
@@ -96,19 +93,23 @@ async def login(login_data: UserLoginRequest, response: Response) -> AuthRespons
     summary="Logout user",
     description="Logout user and clear refresh token from cookies.",
 )
-async def logout(response: Response) -> dict:
+async def logout(request: Request, response: Response) -> dict:
     """
     Logout user and clear refresh token cookie.
 
     Returns success message.
     """
-    response.delete_cookie(
-        key="refresh_token",
-        httponly=True,
-        secure=False,
-        samesite="lax",
-    )
+    refresh_token = request.cookies.get("refresh_token")
+    if refresh_token:
+        from services.auth_service import AuthService
+        try:
+            payload = AuthService.decode_token(refresh_token)
+            import asyncio
+            asyncio.create_task(RefreshTokenRevocationCRUD.revoke(refresh_token, payload.exp))
+        except Exception:
+            pass
     
+    delete_refresh_token_cookie(response)
     return {
         "success": True,
         "message": "Logged out successfully"
@@ -127,10 +128,7 @@ async def logout(response: Response) -> dict:
 )
 async def refresh(refresh_token: Optional[str] = Cookie(None), response: Response = None) -> AuthResponse:
     """
-    Generate new access token from refresh token.
-
-    The refresh token should be sent as a cookie.
-    Returns new access token.
+    Returns new access token and sets new refresh token in cookies.
     """
     if not refresh_token:
         raise HTTPException(
@@ -140,6 +138,14 @@ async def refresh(refresh_token: Optional[str] = Cookie(None), response: Respons
     
     try:
         auth_response = await auth_service.refresh_access_token(refresh_token)
+        
+        if auth_response.refresh_token:
+            set_refresh_token_cookie(
+                response,
+                auth_response.refresh_token,
+                auth_response.refresh_token_expires_in,
+            )
+        
         return auth_response
     except AuthenticationError as e:
         raise HTTPException(

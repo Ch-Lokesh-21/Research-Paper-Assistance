@@ -2,6 +2,7 @@
 Authentication schemas for signup, login, and JWT tokens.
 """
 
+from typing import Optional
 from pydantic import EmailStr, Field, field_validator
 
 from .base import BaseSchema
@@ -95,11 +96,11 @@ class AuthResponse(BaseSchema):
     token: TokenResponse = Field(
         description="Authentication token details",
     )
-    refresh_token: str = Field(
+    refresh_token: Optional[str] = Field(
         default=None,
         description="Refresh token for obtaining new access tokens",
     )
-    refresh_token_expires_in: int = Field(
+    refresh_token_expires_in: Optional[int] = Field(
         default=None,
         description="Refresh token expiration time in seconds",
     )
